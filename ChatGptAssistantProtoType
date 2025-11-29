@@ -8,9 +8,9 @@ from PIL import Image
 Model="gpt-4o"
 
 client = OpenAI(api_key="insert key")
-
-
-
+"""
+Goto Function on_release line 172 to see keybinds for responses and goto line 122 to enter a prompt to ask it stuff
+"""
 # Function Calling with Gpt-4o
 '''
 def Get_weather(location):
@@ -204,4 +204,5 @@ while True:
     i = True
     i = Reboot()
     if i == False:
+
         break
