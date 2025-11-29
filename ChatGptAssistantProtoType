@@ -1,0 +1,207 @@
+from openai import OpenAI
+import json
+import os
+import time
+from PIL import Image
+
+# Define the Model
+Model="gpt-4o"
+
+client = OpenAI(api_key="insert key")
+
+
+
+# Function Calling with Gpt-4o
+'''
+def Get_weather(location):
+    if "San Fracisco" in location.lower():
+        return json.dumps({"location": "San Fracisco", "fahrenheit": "20"})
+    elif "New York" in location.lower():
+        return json.dumps({"location": "New York", "fahrenheit": "75"})
+    else:
+        return json.dumps({"location": location, "farenheit": "N/A"})
+def function_calling():
+    messages = [{"role": "user", "content": "what is the weather?"}]
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "Get_weather",
+                "description": "Get the current weather",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "location": {
+                            "type": "string",
+                            "description":  "The city and state, e.g. San Francisco, CA",
+                        },
+                        "format": {
+                            "type": "string",
+                            "enum": ["celsius", "fahrenheit"],
+                            "description": "The temperature unit to use. Infer this from the users location.",
+                        },
+                    },
+                    "required": ["location", "format"],
+                },
+            }
+        },
+    ]
+    response = client.chat.completions.create(
+        model=Model,
+        messages=messages,
+        tools=tools,
+        tool_choice="required",
+    )
+    response_message = response.choices[0].message
+    tool_calls = response_message.tool_calls
+    if tool_calls:
+        availabe_functions = {"Get_weather": Get_weather}
+        messages.append(response_message)
+        for tool_call in tool_calls:
+            function_name = tool_call.function.name
+            function_to_call = availabe_functions[function_name]
+            function_args = json.loads(tool_call.function.arguments)
+            print("tool call: ", tool_call)
+            function_response = function_to_call(
+                location=function_args.get("location"),
+            )
+            messages.append(
+                {
+                    "tool_call_id": tool_call.id,
+                    "role": "tool",
+                    "name": function_name,
+                    "content": function_response,
+                }
+            )
+        second_response = client.chat.completions.create(
+            model=Model,
+            messages=messages,
+        )
+        return second_response
+print(function_calling())
+
+'''
+
+
+"""def ask():
+    question = client.chat.completions.create(
+        model=Model,
+        messages=[
+            {"role": "system", "content": "You are a cool assitant. Mind helping me?"},
+            {"role": "user", "content": "waht is 9 + 10"},
+        ]
+    )
+
+    print(question.choices[0].message.content)"""
+
+
+def imageask():
+    while True:
+        # Images with gpt-4o 
+        from IPython.display import Image, display, Audio, Markdown
+        import base64
+
+        img_pth = ("./Screenshot.png")
+
+        # Preview image for context
+        display(Image(img_pth))
+
+        # Open the image file and encode it as a base64 string
+        def encode_image(image_path):
+            with open(image_path, "rb") as image_file:
+                return base64.b64encode(image_file.read()).decode("utf-8")
+
+        base64_image = encode_image(img_pth)
+
+        response = client.chat.completions.create(
+            model=Model,
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that responds in Markdown."},
+                {"role": "user", "content": [
+                    {"type": "text", "text": "What game is this?"},
+                    {"type": "image_url", "image_url": {
+                        "url": f"data:image/png;base64,{base64_image}"}
+                    }
+                ]}
+            ],
+            temperature=0.0,
+        )
+
+        print(response.choices[0].message.content)
+        break
+
+
+
+
+
+def openimage():
+    Img = Image.open("./Screenshot.png")
+    Img.show()
+
+def takeimage():
+    # Screenshot function
+    from pyautogui import screenshot
+    Screenshot = screenshot(region=(0,0,1900,1000))
+
+    # Update image for cost saving
+    """from torchvision import transforms
+
+    transform = transforms.Compose([
+        transforms.Grayscale(1)
+    ])
+
+    Screenshot = transform(Screenshot)"""
+    Screenshot.save("Screenshot.png")
+
+
+
+# Create HotKeys
+from pynput.keyboard import Key, Controller
+from pynput import keyboard
+
+
+Keyboard = Controller()
+Keyboard.press(Key.ctrl_l)
+Keyboard.release(Key.ctrl_l)
+def on_press(key):
+    try:
+        print('alphanumeric key {0} pressed'.format(key.char))
+    except:
+        print('special key {0} pressed'.format(key))
+def on_release(key):
+    print('{0} released'.format(
+        key))
+    if key == keyboard.Key.esc:
+        # Stop listener
+        return False
+    if key == keyboard.Key.ctrl_l:
+        takeimage()
+        openimage()
+    if key == keyboard.Key.ctrl_r:
+        takeimage()
+        time.sleep(5)
+        imageask()
+def Reboot():
+        Reboot = str(input("Press 'Enter' to reboot or press 'E' to end "))
+        if Reboot == "":
+            print("rebooting")
+        else:
+            return False
+while True:
+
+    # Collect events until released
+    with keyboard.Listener(
+            on_press=on_press,
+            on_release=on_release) as listener:
+        listener.join()
+    # ...or, in a non-blocking fashion:
+    listener = keyboard.Listener(
+        on_press=on_press,
+        on_release=on_release)
+    listener.start()
+    listener.stop()
+
+    i = True
+    i = Reboot()
+    if i == False:
+        break
